@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_tags %}
+
+
+{% block head %}
+ 
+    <link rel="stylesheet" href="{% static 'excelupload/check.css'%}">  
+{% endblock %}
+
+
+{% block content%}
+
+<style>
+.minimage{
+    width:4rem;
+    height:4rem
+}
+.table{
+    text-align:center
+}
+.table td{
+    vertical-align:middle
+}
+</style>
+
+<h1>Add and manage static keys.</h1>
+
+
+<form id="addKey">
+    <div>
+        <label for "keyvalue">Key</label>
+        <input id="keyvalue" type="keyvalue">
+    </div>
+    <div>
+        <label>Type</label>
+        <select id="selectoptions" onchange="changeFields(this.value)">
+            <option value="0">*Select</option>
+            <option value="1">Text</option>
+            <option value="2">TextArea</option>
+            <option value="3">File</option>
+            <option value="4">Link</option>
+        </select>
+    </div>
+
+    <div hidden id="dv1">
+        <label for "text">Text</label>
+        <input id="text" type="text">
+    </div>
+    <div hidden id="dv2">
+        <label for "textarea">TextArea</label>
+        <textarea id="textarea"></textarea>
+    </div>
+
+    <div hidden id="dv3">
+        <label for "file">File/Image</label>
+        <input id="file" type="file">
+    </div>
+
+    <div hidden id="dv4">
+        <label for "link">Link label</label>
+        <input id="linkh" type="text">
+        <br>
+        <label for "link">Link destiny</label>
+        <input id="linkb" type="text">
+    </div>
+    <input onclick="sendform(this.parentElement)" type="button" value="Send">
+</form>
+
+<div class="searchbox">
+    <input id="navbarsearchbox2" class="transparentinput" type="text" placeholder="Search here">
+    <button onclick="location.href = './'+slugify(navbarsearchbox2.value)" class="buttonsearch" ><i class="fa fa-search"></i></button>
+</div>
+<table class="table">
+    <tr class ="bg-light">
+        
+        {% for key in keys%}
+        <td><b>{{key|title}}</b></td>
+        {% endfor %}
+        <td><b>Display</b></td>
+        <td><b>Link</b></td>
+        <td><b>Action</b></td>
+    </tr>
+    {% for object in objects%}
+    <tr class = "foralltables ">
+        <tr class = "foralltables ">
+            <td >
+                <span>{{object.keyobj}}</span>
+            </td>
+            <td >
+                <span>{{object.type}}</span>
+            </td>
+            <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
+                <span>{{object.textobj}}</span>
+                {% if object.type == 1 %}
+                <div hidden>
+                    <input id="txtedit" type="text" value={{object.textobj}}>
+                    <input onclick="sendtext(this.parentElement.children[0], {{object.id}})" type="button" value="Send">
+                </div>
+                {% endif %}
+            </td>
+            <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
+                <span>{{object.textareaobj}}</span>
+                {% if object.type == 2 %}
+                <div hidden>
+                    <textarea id="areaedit">{{object.textareaobj}}</textarea>
+                    <input onclick="sendarea(this.parentElement.children[0], {{object.id}})" type="button" value="Send">
+                </div>
+                {% endif %}
+            </td>
+            <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
+                <span>{{object.fileobj}}</span>
+                {% if object.type == 3 %}
+                <div hidden>
+                    <input id="fileedit" type="file">
+                    <input onclick="sendfile(this.parentElement.children[0], {{object.id}})" type="button" value="Send">
+                </div>
+                {% endif %}
+            </td>
+            <td>
+                {% if object.type == 3 %}
+                <img class="minimage" src={{newobj | get_image:object.keyobj}}>
+                {% endif %}
+            </td>
+            <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
+                <a href = "{{object.linkobjb}}">{{object.linkobjh}}</a></span>
+                {% if object.type == 4 %}
+                <div hidden>
+                    <input id="linkheadt" type="text" value={{object.linkobjh}}>
+                    <input id="linkbody" type="text" value={{object.linkobjb}}>
+                    <input onclick="sendlink(this.parentElement, {{object.id}})" type="button" value="Send">
+                </div>
+                {% endif %}
+            </td>
+            <td onclick="deleteline({{object.id}})">
+                <i style="cursor:pointer" class="material-icons">delete</i>
+            </td>
+        </tr>
+    {% endfor %}
+
+</table>
+
+
+
+
+<div class="pagination">
+    <div class="step-links">
+        {% if objects.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ objects.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="circles">
+            {% for x in objects.paginator %}
+                {% if x.number|add:"-3" <= objects.number and x.number|add:"3" >= objects.number %}
+                <a style="all:unset" href="?page={{x.number}}"><div class="circle {% if x.number == objects.number%}turnorange {% endif%}"></div></a>
+                {% endif %}
+            {% endfor %}
+        </span>
+
+        {% if objects.has_next %}
+            <a href="?page={{ objects.next_page_number }}">next</a>
+            <a href="?page={{ objects.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </div>
+    <div>Page {{ objects.number }} of {{ objects.paginator.num_pages }}.</div>
+</div>
+
+
+
+<script>
+
+    async function sendlink(object,id){
+        data = createDataFiles('newlink', object)
+        data.append("value", id)
+        data.append("newlinkh", object.children[0].value)
+        data.append("newlinkb",  object.children[1].value)
+        obj = await fetchpage2("", data)
+        location.reload()
+    }
+    async function sendtext(object,id){
+        data = createDataFiles('newtext', object)
+        data.append("value", id)
+        data.append("newtext", object.value)
+        obj = await fetchpage2("", data)
+        location.reload()
+    }
+
+    async function sendarea(object,id){
+        data = createDataFiles('newarea', object)
+        data.append("value", id)
+        data.append("newarea", object.value)
+        obj = await fetchpage2("", data)
+        location.reload()
+    }
+
+
+    async function sendfile(object, id){
+        data = createDataFiles('newfile', object)
+        data.append("value", id)
+        data.append("file", object.files[0])
+        obj = await fetchpage2("", data)
+        location.reload()
+    }
+
+    async function deleteline(id){
+        data = createDataFiles('delete', id)
+        data.append("value", id)
+        obj = await fetchpage2("", data)
+        location.reload()
+    }
+
+    function changeFields(value){
+        dv1.hidden = true
+        dv2.hidden = true
+        dv3.hidden = true
+        if (value == 1 )
+            dv1.hidden = false
+        if (value == 2 )
+            dv2.hidden = false
+        if (value == 3 )
+            dv3.hidden = false
+        if (value == 4 )
+            dv4.hidden = false
+        
+    }
+async function sendform(form){
+    data = createDataFiles("newkey", form)
+
+    obj = await fetchpage2("", data)
+    location.reload()
+}
+</script>
+{% endblock %}
