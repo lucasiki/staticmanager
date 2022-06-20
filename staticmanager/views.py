@@ -13,7 +13,7 @@ from django.db.models import Q
 def deletefile(f):
     try:
         path = settings.MEDIA_ROOT
-        fullpath = path + '\\' + str(f)    
+        fullpath = f"{path}/{str(f)}"    
         os.remove(fullpath) 
     except Exception as Err:
         print(Err)
@@ -22,16 +22,17 @@ def deletefile(f):
 
 def handle_uploaded_file(f, staticpath):
     formateddate = datetime.strftime(datetime.today(), "%Y%m%d%h%M%S")
-    path = settings.MEDIA_ROOT + '\\' + staticpath
+    path = f"{settings.MEDIA_ROOT}/{staticpath}"
     fullpath = f"{path}/{formateddate}-{str(f)}"
 
     if not os.path.exists(path):
         os.makedirs(path)
 
+
     with open(fullpath, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-    return (f"{path}/{formateddate}-{str(f)}")
+    return (f"{staticpath}/{formateddate}-{str(f)}")
 
 def processObjects(objects):
     newobj = {}
