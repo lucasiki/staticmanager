@@ -23,7 +23,7 @@ def deletefile(f):
 def handle_uploaded_file(f, staticpath):
     formateddate = datetime.strftime(datetime.today(), "%Y%m%d%h%M%S")
     path = settings.MEDIA_ROOT + '\\' + staticpath
-    fullpath = path + '\\' + formateddate + '-' +str(f)
+    fullpath = f"{path}/{formateddate}-{str(f)}"
 
     if not os.path.exists(path):
         os.makedirs(path)
@@ -31,7 +31,7 @@ def handle_uploaded_file(f, staticpath):
     with open(fullpath, 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
-    return (staticpath + '\\' + formateddate + '-' + str(f))
+    return (f"{path}/{formateddate}-{str(f)}")
 
 def processObjects(objects):
     newobj = {}
