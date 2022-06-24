@@ -13,3 +13,13 @@ class staticManager(models.Model):
     fileobj = models.CharField(max_length=255, default='')
     linkobjh = models.CharField(max_length=255, default='')
     linkobjb = models.CharField(max_length=255, default='')
+
+    def retType(self):
+        if self.type == 1:
+            return 'Text'
+        if self.type == 2:
+            return 'TextArea'
+        if self.type == 3:
+            return 'Image'
+        if self.type == 4:
+            return 'Link'
