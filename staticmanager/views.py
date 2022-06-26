@@ -7,6 +7,7 @@ from .models import staticManager
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.db.models import Q
+import pandas as pd
 
 # Create your views here.
 
@@ -48,6 +49,47 @@ def processObjects(objects):
         newobj[object.keyobj]['type'] = object.type 
 
     return newobj
+
+def processWords(df):
+    listA = []
+    for x in range(len(df)):
+        listA.append(df.iloc[x,:])
+
+    for object in listA:
+        try:
+            newmanager = staticManager()
+            newmanager.keyobj = object.key
+            newmanager.type = object.type
+
+            if object.type == 1:
+                newmanager.textobj = object.content
+
+            if object.type == 2:    
+                newmanager.textareaobj = object.content
+
+            if object.type == 3:
+                newmanager.fileobj = object.content
+
+            if object.type == 4:
+                objects = object.content.split(':')
+                newmanager.linkobjh = objects[0]
+                newmanager.linkobjb = objects[1]
+
+            newmanager.save()
+        except:
+            pass
+
+#initialize#
+try:
+    if (len(staticManager.objects.all()) == 0):
+        try:
+            df = pd.read_excel('staticmanager/static/defaultwords.xlsx')
+            processWords(df)
+        except:
+            pass
+except:
+    pass
+#initialize#
 
     
 
