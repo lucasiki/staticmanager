@@ -22,9 +22,32 @@
 .table td{
     vertical-align:middle
 }
+
+main {
+    width: 85%;
+    margin: 1rem auto;
+    overflow-x: scroll;
+}
+.searchbox{
+    margin: 2rem 0rem;
+}
+
+#addKey div{
+    display: flex;
+    width: 10%;
+    margin: 1rem 0rem;
+    flex-direction: column;
+}
+
+#addKey select{
+    height: 2rem
+}
+
+
+
 </style>
 
-<h1>Add and manage static keys.</h1>
+<h1>Manage Site Settings.</h1>
 
 
 <form id="addKey">
@@ -40,6 +63,7 @@
             <option value="2">TextArea</option>
             <option value="3">File</option>
             <option value="4">Link</option>
+            <option value="5">Load Data (No key required)</option>
         </select>
     </div>
 
@@ -64,8 +88,16 @@
         <label for "link">Link destiny</label>
         <input id="linkb" type="text">
     </div>
-    <input onclick="sendform(this.parentElement)" type="button" value="Send">
+
+    <div hidden id="dv5">
+        <label for "fileexcel">File/Image</label>
+        <input id="fileexcel" type="file">
+    </div>
+    <br>
+    <input onclick="sendform(this.parentElement)" type="button" value="Submit">
 </form>
+
+
 
 <div class="searchbox">
     <input id="navbarsearchbox2" class="transparentinput" type="text" placeholder="Search here">
@@ -74,11 +106,12 @@
 <table class="table">
     <tr class ="bg-light">
         
-        {% for key in keys%}
-        <td><b>{{key|title}}</b></td>
-        {% endfor %}
+        
+        <td><b>Key</b></td>
+        <td><b>type</b></td>
+        <td><b>Content</b></td>
         <td><b>Display</b></td>
-        <td><b>Link</b></td>
+        {% comment %} <td><b>Link</b></td> {% endcomment %}
         <td><b>Action</b></td>
     </tr>
     {% for object in objects%}
@@ -90,48 +123,57 @@
             <td >
                 <span>{{object.retType}}</span>
             </td>
+            {% if object.type == 1 %}
             <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
                 <span>{{object.textobj}}</span>
-                {% if object.type == 1 %}
+                
                 <div hidden>
-                    <input id="txtedit" type="text" value={{object.textobj}}>
+                    <input id="txtedit{{object.id}}" type="text" value='{{ object.textobj }}'>
                     <input onclick="sendtext(this.parentElement.children[0], {{object.id}})" type="button" value="Send">
                 </div>
-                {% endif %}
+                
             </td>
+            {% endif %}
+            {% if object.type == 2 %}
             <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
                 <span>{{object.textareaobj}}</span>
-                {% if object.type == 2 %}
+                
                 <div hidden>
-                    <textarea id="areaedit">{{object.textareaobj}}</textarea>
+                    <textarea id="areaedit{{object.id}}">{{object.textareaobj}}</textarea>
                     <input onclick="sendarea(this.parentElement.children[0], {{object.id}})" type="button" value="Send">
                 </div>
-                {% endif %}
+                
             </td>
+            {% endif %}
+            {% if object.type == 3 %}
             <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
                 <span>{{object.fileobj}}</span>
-                {% if object.type == 3 %}
+                
                 <div hidden>
-                    <input id="fileedit" type="file">
+                    <input id="fileedit{{object.id}}" type="file">
                     <input onclick="sendfile(this.parentElement.children[0], {{object.id}})" type="button" value="Send">
                 </div>
-                {% endif %}
+                
             </td>
+            {% endif %}
+            {% if object.type == 4 %}
+            <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
+                <span><a style="color:black" href = "{{object.linkobjb}}">{{object.linkobjh}}</a></span>
+                
+                <div hidden>
+                    <input id="linkheadt{{object.id}}" type="text" value='{{object.linkobjh}}'>
+                    <input id="linkbody{{object.id}}" type="text" value='{{object.linkobjb}}'>
+                    <input onclick="sendlink(this.parentElement, {{object.id}})" type="button" value="Send">
+                </div>
+                
+            </td>
+            {% endif %}
             <td>
                 {% if object.type == 3 %}
                 <img class="minimage" src={{newobj | get_image:object.keyobj}}>
                 {% endif %}
             </td>
-            <td ondblclick="showhide(this.children[0]);showhide(this.children[1])">
-                <a href = "{{object.linkobjb}}">{{object.linkobjh}}</a></span>
-                {% if object.type == 4 %}
-                <div hidden>
-                    <input id="linkheadt" type="text" value={{object.linkobjh}}>
-                    <input id="linkbody" type="text" value={{object.linkobjb}}>
-                    <input onclick="sendlink(this.parentElement, {{object.id}})" type="button" value="Send">
-                </div>
-                {% endif %}
-            </td>
+
             <td onclick="deleteline({{object.id}})">
                 <i style="cursor:pointer" class="material-icons">delete</i>
             </td>
@@ -214,6 +256,7 @@
         dv1.hidden = true
         dv2.hidden = true
         dv3.hidden = true
+        dv4.hidden = true
         if (value == 1 )
             dv1.hidden = false
         if (value == 2 )
@@ -222,6 +265,8 @@
             dv3.hidden = false
         if (value == 4 )
             dv4.hidden = false
+        if (value == 5 )
+            dv5.hidden = false
         
     }
 async function sendform(form){
