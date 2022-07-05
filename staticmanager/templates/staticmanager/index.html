@@ -67,21 +67,21 @@ main {
         </select>
     </div>
 
-    <div hidden id="dv1">
+    <div  id="dv1">
         <label for "text">Text</label>
         <input id="text" type="text">
     </div>
-    <div hidden id="dv2">
+    <div  id="dv2">
         <label for "textarea">TextArea</label>
         <textarea id="textarea"></textarea>
     </div>
 
-    <div hidden id="dv3">
+    <div  id="dv3">
         <label for "file">File/Image</label>
         <input id="file" type="file">
     </div>
 
-    <div hidden id="dv4">
+    <div  id="dv4">
         <label for "link">Link label</label>
         <input id="linkh" type="text">
         <br>
@@ -89,7 +89,7 @@ main {
         <input id="linkb" type="text">
     </div>
 
-    <div hidden id="dv5">
+    <div  id="dv5">
         <label for "fileexcel">File/Image</label>
         <input id="fileexcel" type="file">
     </div>
@@ -217,14 +217,14 @@ main {
         data.append("value", id)
         data.append("newlinkh", object.children[0].value)
         data.append("newlinkb",  object.children[1].value)
-        obj = await fetchpage2("", data)
+        obj = await fetchpage2("/staticmanager/", data)
         location.reload()
     }
     async function sendtext(object,id){
         data = createDataFiles('newtext', object)
         data.append("value", id)
         data.append("newtext", object.value)
-        obj = await fetchpage2("", data)
+        obj = await fetchpage2("/staticmanager/", data)
         location.reload()
     }
 
@@ -232,7 +232,7 @@ main {
         data = createDataFiles('newarea', object)
         data.append("value", id)
         data.append("newarea", object.value)
-        obj = await fetchpage2("", data)
+        obj = await fetchpage2("/staticmanager/", data)
         location.reload()
     }
 
@@ -241,39 +241,39 @@ main {
         data = createDataFiles('newfile', object)
         data.append("value", id)
         data.append("file", object.files[0])
-        obj = await fetchpage2("", data)
+        obj = await fetchpage2("/staticmanager/", data)
         location.reload()
     }
 
     async function deleteline(id){
         data = createDataFiles('delete', id)
         data.append("value", id)
-        obj = await fetchpage2("", data)
+        obj = await fetchpage2("/staticmanager/", data)
         location.reload()
     }
 
     function changeFields(value){
-        dv1.hidden = true
-        dv2.hidden = true
-        dv3.hidden = true
-        dv4.hidden = true
-        dv5.hidden = true
+        dv1.style['display'] = 'none'
+        dv2.style['display'] = 'none'
+        dv3.style['display'] = 'none'
+        dv4.style['display'] = 'none'
+        dv5.style['display'] = 'none'
         if (value == 1 )
-            dv1.hidden = false
+            dv1.style['display'] = ''
         if (value == 2 )
-            dv2.hidden = false
+            dv2.style['display'] = ''
         if (value == 3 )
-            dv3.hidden = false
+            dv3.style['display'] = ''
         if (value == 4 )
-            dv4.hidden = false
+            dv4.style['display'] = ''
         if (value == 5 )
-            dv5.hidden = false
+            dv5.style['display'] = ''
         
     }
 async function sendform(form){
     data = createDataFiles("newkey", form)
 
-    obj = await fetchpage2("", data)
+    obj = await fetchpage2("/staticmanager/", data)
     location.reload()
 }
 </script>
