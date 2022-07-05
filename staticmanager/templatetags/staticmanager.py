@@ -1,5 +1,5 @@
 from django import template
-from barber import settings
+from django.conf import settings
 from staticmanager.models import staticManager
 
 register = template.Library()
