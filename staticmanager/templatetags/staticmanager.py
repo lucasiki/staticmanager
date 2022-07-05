@@ -1,5 +1,6 @@
 from django import template
 from barber import settings
+from staticmanager.models import staticManager
 
 register = template.Library()
 
