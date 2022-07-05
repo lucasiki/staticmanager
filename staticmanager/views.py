@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
-from srcResearch import settings
+from django.conf import settings
 import os
 from .models import staticManager 
 from django.core.paginator import Paginator
