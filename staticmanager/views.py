@@ -3,11 +3,12 @@ from django.shortcuts import render
 from django.views import View
 from django.conf import settings
 import os
-from .models import staticManager 
+from .models import staticManager, Staticcategory 
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.db.models import Q
 import pandas as pd
+from accounts.validations import user_auth, user_admin
 
 # Create your views here.
 
@@ -91,12 +92,41 @@ except:
     pass
 #initialize#
 
-    
+class categoryView(View):
+    @user_admin
+    def post(self, request):
+        ret = request.POST
+
+        if ret['key'] == 'update':
+            obj = staticManager.objects.filter(id = ret['id'])[0]
+            if ret['name'] != '':
+                category = Staticcategory.objects.filter(name = ret['name'])
+                if len(category) == 0:
+                    Category = Staticcategory(name = ret['name']).save()
+                    category = Staticcategory.objects.filter(name = ret['name'])
+                    Category = category[0]
+                else:
+                    Category = category[0]
+                obj.category = Category
+                obj.save()
+            categorys = []
+
+        if ret['key'] == 'delete':
+            Staticcategory.objects.filter(name = ret['name']).delete()
+            categorys = []
+
+        if ret['key'] == 'category':
+            categorys = list(Staticcategory.objects.filter(name__icontains = ret['name']).order_by('name').values())
+        
+        return JsonResponse({'values': categorys})
 
 
 class staticManagerView(View):
-    def get(self,request, Slug = None):
+    @user_admin
+    def get(self,request):
+        Slug = request.GET.get('search')
         objects = staticManager.objects.all().order_by('id')
+        categories = Staticcategory.objects.all().order_by('-id')
         if Slug != None:
             objects = objects.filter(
             Q(keyobj__contains=Slug) 
@@ -106,6 +136,16 @@ class staticManagerView(View):
             | Q(linkobjh__contains=Slug) 
             | Q(linkobjb__contains=Slug) 
             )
+
+        Cat = request.GET.get('category')
+        if Cat != None:
+            Cat = categories.filter(name = Cat)[0]
+            objects = objects.filter(category = Cat)
+
+        typeSearch = request.GET.get('Type')
+        if typeSearch != None:
+            objects = objects.filter(type = int(typeSearch))
+            
 
         newobj = processObjects(objects)
 
@@ -120,13 +160,23 @@ class staticManagerView(View):
         context={
             "objects":objects,
             "keys" : keys,
-            "newobj": newobj
+            "newobj": newobj,
+            "session": request.session,
+            "categories": categories
             }
         return render(request, 'staticmanager/index.html', context)
-
-    def post(self,request):
+    @user_admin
+    def post(self,request, Slug=''):
+       
         texts = request.POST
         files = request.FILES
+
+        if texts['key'] == 'newDimension':
+            obj = staticManager.objects.filter(id = texts['value'])
+            obj = obj[0]
+            obj.dimension = texts['newDimension']
+            obj.save()
+            return JsonResponse({})
 
         if texts['key'] == 'newlink':
             obj = staticManager.objects.filter(id = texts['value'])
@@ -175,6 +225,16 @@ class staticManagerView(View):
             newmanager.keyobj = texts['keyvalue']
             newmanager.type = texts['selectoptions']
 
+            if texts['categoryInput'] != '':
+                category = Staticcategory.objects.filter(name = texts['categoryInput'])
+                if len(category) == 0:
+                    Category = Staticcategory(name = texts['categoryInput']).save()
+                    category = Staticcategory.objects.filter(name = texts['categoryInput'])
+                    Category = category[0]
+                else:
+                    Category = category[0]
+                newmanager.category = Category
+
             if texts['selectoptions'] == '1':
                 newmanager.textobj = texts['text']
 
@@ -183,11 +243,17 @@ class staticManagerView(View):
 
             if texts['selectoptions'] == '3':
                 newmanager.fileobj = handle_uploaded_file(files['file'], 'staticfiles')
+                newmanager.dimension = texts['dimensions']
 
             if texts['selectoptions'] == '4':
                 newmanager.linkobjh = texts['linkh'] 
                 newmanager.linkobjb = texts['linkb'] 
 
+            if texts['selectoptions'] == '5':
+                excel = handle_uploaded_file(files['fileexcel'], 'staticfiles')
+                df = pd.read_excel('srcResearch' + settings.MEDIA_URL + excel)
+                processWords(df)
+                return JsonResponse({})
             newmanager.save()
 
         return JsonResponse({})
