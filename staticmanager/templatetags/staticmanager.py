@@ -48,3 +48,26 @@ def staticmanager(value, arg):
         except:
             pass
     return value
+
+@register.inclusion_tag('staticmanager/image.html')
+def staticPhoto(obj):
+
+    obj = staticManager.objects.filter(keyobj=obj)[0]
+    dimension = ''
+    width = ''
+    height = ''
+    try:
+        if obj.dimension != '':
+            newdimension = obj.dimension.split(' ')
+            width = newdimension[0]
+            height = newdimension[1]
+    except:
+        dimension = ''
+
+    imageSrc = settings.MEDIA_URL + obj.fileobj
+    return{
+        'width':width,
+        'height':height,
+        'imageSrc':imageSrc,
+        'imageAlt': obj.keyobj
+    }
