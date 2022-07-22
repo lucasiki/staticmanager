@@ -1,5 +1,6 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponseRedirect
+from django.urls import reverse
 from django.views import View
 from django.conf import settings
 import os
@@ -61,6 +62,16 @@ def processWords(df):
             newmanager = staticManager()
             newmanager.keyobj = object.key
             newmanager.type = object.type
+            newmanager.dimension = object.dimension
+
+            category = Staticcategory.objects.filter(name = object.category)
+            if len(category) == 0:
+                Category = Staticcategory(name = object.category).save()
+                category = Staticcategory.objects.filter(name = object.category)
+                Category = category[0]
+            else:
+                Category = category[0]
+            newmanager.category = Category
 
             if object.type == 1:
                 newmanager.textobj = object.content
@@ -77,7 +88,8 @@ def processWords(df):
                 newmanager.linkobjb = objects[1]
 
             newmanager.save()
-        except:
+        except Exception as Err:
+            print(Err)
             pass
 
 #initialize#
@@ -91,6 +103,19 @@ try:
 except:
     pass
 #initialize#
+
+class toggleManager(View):
+    @user_admin
+    def get(self, request):
+        try:
+            if request.session['staticmanager'] == True:
+                request.session['staticmanager'] = False
+                return HttpResponseRedirect(reverse('index-view'))
+        except:
+            pass
+        request.session['staticmanager'] = True
+        return HttpResponseRedirect(reverse('index-view'))
+
 
 class categoryView(View):
     @user_admin
