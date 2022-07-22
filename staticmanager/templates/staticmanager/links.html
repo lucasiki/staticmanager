@@ -1,0 +1,9 @@
+{% if user.is_admin and enabled %}
+<span class="staticWrapper">
+    <a class="staticText" href="{{link}}">{{text|safe}}</a>
+    <span onclick="location.href = '/staticmanager/?search={{key}}'; return false; event.stopPropagation;" class="staticLink">Edit</span>
+</span>
+
+{% else %}
+    <a class="staticText" href="{{link}}">{{text|safe}}</a>
+{% endif %}
