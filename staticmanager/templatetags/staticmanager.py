@@ -49,10 +49,13 @@ def staticmanager(value, arg):
             pass
     return value
 
-@register.inclusion_tag('staticmanager/image.html')
-def staticPhoto(obj):
+@register.inclusion_tag('staticmanager/image.html', takes_context = True)
+def staticPhoto(context, obj):
 
-    obj = staticManager.objects.filter(keyobj=obj)[0]
+    obj = staticManager.objects.filter(keyobj=obj)
+    if len(obj) == 0:
+        return
+    obj = obj[0]
     dimension = ''
     width = ''
     height = ''
@@ -65,9 +68,72 @@ def staticPhoto(obj):
         dimension = ''
 
     imageSrc = settings.MEDIA_URL + obj.fileobj
+    
+    try:
+        enabled = context['session']['staticmanager']
+    except:
+        enabled = False
     return{
         'width':width,
         'height':height,
         'imageSrc':imageSrc,
-        'imageAlt': obj.keyobj
+        'imageAlt': obj.keyobj,
+        'user':context['user'],
+        'enabled':enabled
+    }
+
+@register.inclusion_tag('staticmanager/texts.html', takes_context = True)
+def staticText(context, obj):
+
+    obj = staticManager.objects.filter(keyobj=obj)
+    if len(obj) == 0:
+        return
+    obj = obj[0]
+
+    returner = ''
+    if obj.type == 1:
+        returner = obj.textobj
+    if obj.type == 2:
+        returner = obj.textareaobj
+
+
+    try:
+        enabled = context['session']['staticmanager']
+    except:
+        enabled = False
+    return{
+        'text':returner,
+        'key': obj.keyobj,
+        'user':context['user'],
+        'enabled':enabled
+    }
+
+@register.inclusion_tag('staticmanager/links.html', takes_context = True)
+def staticLink(context, obj):
+
+    obj = staticManager.objects.filter(keyobj=obj)
+    if len(obj) == 0:
+        return
+    obj = obj[0]
+
+    if obj.type == 1:
+        returnerLink = obj.textobj
+        returnerText = obj.textobj
+    if obj.type == 2:
+        returnerLink = obj.textareaobj
+        returnerText = obj.textareaobj
+    if obj.type == 4:
+        returnerLink = obj.linkobjb
+        returnerText = obj.linkobjh
+
+    try:
+        enabled = context['session']['staticmanager']
+    except:
+        enabled = False
+    return{
+        'link':returnerLink,
+        'text':returnerText,
+        'key': obj.keyobj,
+        'user':context['user'],
+        'enabled':enabled
     }
